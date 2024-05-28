@@ -1,25 +1,68 @@
-﻿@page "/"
+@page "/"
 @using HousingWebApp.Services
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @inject NavigationManager navigateTo
 @inject ProtectedLocalStorage storage
 @inject AppAuthService authService
-<PageTitle>Index</PageTitle>
+@inject ILogger<Index> Logger
+<PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
-@if (user != null)
-{
-    <p>Welcome @user.FirstName , @user.LastName to Housing app.</p>
-}
-else{
-    <p>Welcome to Housing app.</p>
-}
+<style>
+    .hero {
+        position: relative;
+        background-image: url('https://i.imgur.com/PhkTf7T.png');
+        background-size: cover;
+        background-position: center;
+        height: 70vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-align: center;
+    }
 
+    .search-container {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        max-width: 600px;
+    }
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+    .search-input {
+        width: 100%;
+        padding: 15px;
+        border-radius: 5px;
+        border: none;
+        font-size: 1.2em;
+    }
 
-@code{
+    .content {
+        padding: 20px;
+        text-align: center;
+    }
+</style>
+
+<div class="hero">
+    <div class="search-container">
+        <input type="text" class="search-input" @bind="searchQuery" @onkeypress="HandleKeyPress" placeholder="Search..." />
+    </div>
+</div>
+
+<div class="content">
+    <h2>Welcome to Housing App</h2>
+    <p>This is the best place to find your next home.</p>
+    @if (user != null)
+    {
+        <p>Welcome @user.FirstName, @user.LastName.</p>
+    }
+</div>
+
+@code {
+    public string searchQuery = string.Empty;
     AppUser? user = null;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -33,11 +76,19 @@ else{
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("MOMOMO");
-                    Console.WriteLine(e.Message);
+                    Logger.LogError(e, "Error fetching user data");
                 }
             }
             StateHasChanged();
+        }
+    }
+
+    private void HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            // Navigate to the search results page with the query
+            navigateTo.NavigateTo($"/house/list/{searchQuery}");
         }
     }
 }
