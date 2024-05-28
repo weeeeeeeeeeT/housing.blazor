@@ -113,7 +113,7 @@
 <div class="flying-cards" style="margin-bottom: 30px">
     @foreach(var house in Houses)
     {
-        <div class="card">
+        <div class="card" @onclick="args => { GoToDetails(house); }">
             <img src="@house.HouseImages.MainImage" alt="House Image" style="width: 100%; height: 200px; object-fit: cover; border-top-left-radius: 10px; border-top-right-radius: 10px;" />
             <div style="padding: 10px;">
                 <p><strong>House Name:</strong> @house.Info</p>
@@ -191,6 +191,11 @@
         {
             searchQuery = e.Value.ToString();
         }
+    }
+
+    private void GoToDetails(HousingModels.Models.House house)
+    {
+        navigateTo.NavigateTo($"/house/{house.Id}");
     }
 
 
