@@ -4,6 +4,7 @@ namespace HousingModels.Models
 {
     public class Address
     {
+        // Key = 
         [Key]
         [Required]
         public int Id { get; set; }
