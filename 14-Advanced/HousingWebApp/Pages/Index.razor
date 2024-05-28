@@ -1,13 +1,20 @@
 @page "/"
 @using HousingWebApp.Services
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using Microsoft.IdentityModel.Tokens
 @inject NavigationManager navigateTo
 @inject ProtectedLocalStorage storage
 @inject AppAuthService authService
 @inject ILogger<Index> Logger
+
+@inject HousingDBContext housingdb
+
 <PageTitle>Home</PageTitle>
 
 <style>
+   /* Landing page css*/
+
+    /* Backround image, used a image hosting service */
     .hero {
         position: relative;
         background-image: url('https://i.imgur.com/PhkTf7T.png');
@@ -21,6 +28,7 @@
         text-align: center;
     }
 
+   /* Search container css */
     .search-container {
         position: absolute;
         top: 50%;
@@ -28,6 +36,7 @@
         transform: translate(-50%, -50%);
         width: 100%;
         max-width: 600px;
+        color: #ffffff;
     }
 
     .search-input {
@@ -38,40 +47,107 @@
         font-size: 1.2em;
     }
 
-    .content {
-        padding: 20px;
-        text-align: center;
-    }
+     .greeting {
+            position: absolute;
+            top: calc(50% - 100px); /* Adjust this value as needed */
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2em;
+            color:black;
+      }
+
+         /* Styles for flying cards */
+          .flying-cards {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              margin-top: 50px;
+          }
+
+          .card {
+              width: 200px;
+              height: 300px;
+              margin: 0 20px;
+              background-color: #f0f0f0;
+              border-radius: 10px;
+              box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+              transition: transform 0.3s ease;
+          }
+
+          .card:hover {
+              transform: translateY(-10px);
+          }
+
+          /* Styles for page footer */
+        .footer {
+                background-color: #333;
+                color: white;
+                text-align: center;
+                padding: 20px 0;
+                position: relative;
+                bottom: 0;
+                width: 100%;
+            }
 </style>
 
-<div class="hero">
+
+
+<div class="hero" style="position: relative">
+    <div class="greeting">
+        @if (user != null)
+        {
+            <p style="font-weight: bold;">Welcome Back @user.FirstName, @user.LastName.</p>
+        }
+        else
+        {
+            <p style="font-weight: bold;">Welcome to Housing Web App</p>
+        }
+    </div>
     <div class="search-container">
-        <input type="text" class="search-input" @bind="searchQuery" @onkeypress="HandleKeyPress" placeholder="Search..." />
+        <input type="text" class="search-input" @bind="searchQuery" @onkeypress="HandleKeyPress" @oninput="HandleInput" placeholder="Search..."/>
     </div>
 </div>
 
-<div class="content">
-    <h2>Welcome to Housing App</h2>
-    <p>This is the best place to find your next home.</p>
-    @if (user != null)
-    {
-        <p>Welcome @user.FirstName, @user.LastName.</p>
-    }
+<!-- Flying Cards Section -->
+<div class="flying-cards">
+       @foreach(var house in Houses)
+       {
+           <div class="card">
+               <p>House name @house.Info</p>
+           </div>
+       }
 </div>
 
+<!-- Page Footer -->
+<div class="footer">
+    <p>&copy; 2024 Housing Project. All rights reserved.</p>
+</div>
+
+
+
 @code {
+
+
+    // binded to the search input (search box), so we can use it to search for houses
     public string searchQuery = string.Empty;
+
+    public List<HousingModels.Models.House> Houses = new List<HousingModels.Models.House>();
+
+    // the user object that will be fetched from the database using the email stored in the local storage
     AppUser? user = null;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+            // get the email from the local storage
             var res = await storage.GetAsync<string>("email");
             if (res.Success)
             {
+                // fetch the user data from the database using the email
                 try
                 {
+                    // await the user data
                     user = await authService.GetUserAsync(res.Value);
                 }
                 catch (Exception e)
@@ -80,15 +156,34 @@
                 }
             }
             StateHasChanged();
+
+            Houses = housingdb.Houses.Take(5).ToList();
+            StateHasChanged();
         }
     }
 
+    // this listens to the key press event on the search input, and if the key pressed is Enter, it will navigate to the search page
     private void HandleKeyPress(KeyboardEventArgs e)
     {
         if (e.Key == "Enter")
         {
-            // Navigate to the search results page with the query
+            if (searchQuery.IsNullOrEmpty())
+            {
+                // load searchQuery from html page
+
+            }
             navigateTo.NavigateTo($"/house/list/{searchQuery}");
         }
     }
+
+    private void HandleInput(ChangeEventArgs e)
+    {
+        // Update searchQuery immediately as the input changes
+        if (e.Value != null)
+        {
+            searchQuery = e.Value.ToString();
+        }
+    }
+
+
 }

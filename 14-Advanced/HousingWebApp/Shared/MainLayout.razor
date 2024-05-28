@@ -1,4 +1,4 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 
 @using HousingWebApp.Services
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
@@ -15,7 +15,7 @@
     </div> *@
 
     <main>
-        <div class="top-row px-4">
+        <div class="top-row" style="background-color: #212529; padding: 0; color: #ffffff">
             <!--Map-->
             <NavLink class="nav-link" href="/house/gmap">
                 <span class="oi oi-map" aria-hidden="true"></span> Map
@@ -79,7 +79,7 @@
             </li>
 
             <!--Add drop down menu with: About, Contact-->
-            <li class="nav-item dropdown">
+            <li class="nav-item dropdown" style="color: #ffffff">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown2" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <span class="oi oi-info" aria-hidden="true"></span> Help
                 </a>
@@ -99,13 +99,14 @@
 
         </div>
 
-        <article class="content px-4">
+        <article class="content" style="padding: 0; float: none; visibility: visible; margin: 0px; padding-left: 0px; padding-right: 0px; padding-bottom: 0px">
             <ErrorBoundary>
                 @Body
             </ErrorBoundary>
         </article>
     </main>
 </div>
+
 
 @code{
     private bool _iconMenuActive { get; set; }
