@@ -48,14 +48,21 @@ export async function show_houses(houses) {
             title: house.info,
             // content: iconImage
         });
-        var contentString = `<div id="content info-window">
-            <h2>${house.info}</h2>
-            <hr/>
-            <img src="${house.houseImages.mainImage}" alt="House Image" style="width:100%; height: 200px;">
-            <hr/>
-            <p><strong>${house.price}$ for ${house.sqrRoot} </strong></p>
-            <a href="/house/${house.id}" class="btn btn-primary">Details</a>
-        </div>`;
+        var contentString = `
+            <div class="card h-100 shadow-sm border-0 house-card" style="max-width: 300px; border-radius: 1rem;">
+                <img src="${house.houseImages.mainImage}" alt="House Image" class="card-img-top" style="max-height: 200px; object-fit: cover; border-top-left-radius: 1rem; border-top-right-radius: 1rem;">
+                <div class="card-body d-flex flex-column" style="padding: 1.5rem;">
+                    <h5 class="card-title">${house.info}</h5>
+                    <p class="card-text mb-1"><strong>Price:</strong> ${house.price}$</p>
+                    <p class="card-text mb-1"><strong>Square Root:</strong> ${house.sqrRoot}</p>
+                    <p class="card-text mb-1"><strong>Address:</strong> ${house.address.toString()}</p>
+                    <p class="card-text mb-1"><strong>Owner:</strong> <a href="mailto:${house.appUser.email}">${house.appUser.lastName}, ${house.appUser.firstName}</a></p>
+                    <div class="mt-auto">
+                        <a href="/house/${house.id}" class="btn btn-primary me-2">Details</a>
+                        <button class="btn btn-secondary" onclick="openGMaps(${house.id})">Go to Map</button>
+                    </div>
+                </div>
+            </div>`;
 
         makeInfoWindow(gmap, infoWindow, contentString, marker);
     }
