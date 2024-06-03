@@ -47,25 +47,66 @@ else
                             <th>Action</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @foreach (var user in FilteredUsers)
-                        {
-                            <tr>
-                                <td>@user.Id</td>
-                                <td>@user.FirstName</td>
-                                <td>@user.LastName</td>
-                                <td>@user.Email</td>
-                                <td>@user.Phone</td>
-                                <td>@(user.IsAdmin ? "Yes" : "No")</td>
-                                <td>@(user.IsBlocked ? "Yes" : "No")</td>
-                                <td>
-                                    <button @onclick="() => ToggleBlockUserAsync(user)" class="btn btn-sm @(user.IsBlocked ? "btn-success" : "btn-danger")">
-                                        @(user.IsBlocked ? "Unblock" : "Block")
-                                    </button>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
+                      <tbody>
+                          @foreach (var user in FilteredUsers)
+                          {
+                              <tr>
+                                  <td>@user.Id</td>
+                                  <td @onclick="() => EditField(user, nameof(user.FirstName))">
+                                      @if (editField == user && editFieldName == nameof(user.FirstName))
+                                      {
+                                          <input type="text" @bind="user.FirstName" @onblur="() => SaveField(user)" />
+                                      }
+                                      else
+                                      {
+                                          @user.FirstName
+                                      }
+                                  </td>
+                                  <td @onclick="() => EditField(user, nameof(user.LastName))">
+                                      @if (editField == user && editFieldName == nameof(user.LastName))
+                                      {
+                                          <input type="text" @bind="user.LastName" @onblur="() => SaveField(user)" />
+                                      }
+                                      else
+                                      {
+                                          @user.LastName
+                                      }
+                                  </td>
+                                  <td @onclick="() => EditField(user, nameof(user.Email))">
+                                      @if (editField == user && editFieldName == nameof(user.Email))
+                                      {
+                                          <input type="text" @bind="user.Email" @onblur="() => SaveField(user)" />
+                                      }
+                                      else
+                                      {
+                                          @user.Email
+                                      }
+                                  </td>
+                                  <td @onclick="() => EditField(user, nameof(user.Phone))">
+                                      @if (editField == user && editFieldName == nameof(user.Phone))
+                                      {
+                                          <input type="text" @bind="user.Phone" @onblur="() => SaveField(user)" />
+                                      }
+                                      else
+                                      {
+                                          @user.Phone
+                                      }
+                                  </td>
+                                  <td>@(user.IsAdmin ? "Yes" : "No")</td>
+                                  <td>@(user.IsBlocked ? "Yes" : "No")</td>
+                                  <td>
+                                      <button @onclick="() => ToggleBlockUserAsync(user)" class="btn btn-sm @(user.IsBlocked ? "btn-success" : "btn-danger")">
+                                          @(user.IsBlocked ? "Unblock" : "Block")
+                                      </button>
+
+                                      <button @onclick="() => DeleteUserAsync(user)" class="btn btn-sm btn-danger">Delete</button>
+
+                                  </td>
+
+                              </tr>
+                          }
+                      </tbody>
+
                 </table>
             </div>
         </div>
@@ -74,6 +115,8 @@ else
 
 @code {
     private List<AppUser>? users;
+    private AppUser? editField;
+    private string? editFieldName;
     string error = "";
     string filterText = "";
     IEnumerable<AppUser> FilteredUsers
@@ -112,7 +155,7 @@ else
             else
             {
                 // Redirect to home page if not admin
-                navigateTo.NavigateTo("/unauthorized ", true);
+                navigateTo.NavigateTo("/unauthorized", true);
                 return;
             }
             StateHasChanged();
@@ -120,18 +163,36 @@ else
     }
     private async Task LoadUsersAsync()
     {
-        //await TransactionService.ExecuteInTransactionAsync(async () =>
-       // {
-            users = await db.AppUsers.ToListAsync();
-       // });
+        users = await db.AppUsers.ToListAsync();
     }
     private async Task ToggleBlockUserAsync(AppUser user)
     {
-       // await TransactionService.ExecuteInTransactionAsync(async () =>
-      // {
-            user.IsBlocked = !user.IsBlocked;
-            db.AppUsers.Update(user);
-       // });
+        user.IsBlocked = !user.IsBlocked;
+        db.AppUsers.Update(user);
+        await db.SaveChangesAsync();
+        StateHasChanged();
+    }
+
+    private async Task DeleteUserAsync(AppUser user)
+    {
+        db.AppUsers.Remove(user);
+        users.Remove(user);
+        await db.SaveChangesAsync();
+        StateHasChanged();
+    }
+
+    private void EditField(AppUser user, string fieldName)
+    {
+        editField = user;
+        editFieldName = fieldName;
+    }
+
+    private async Task SaveField(AppUser user)
+    {
+        editField = null;
+        editFieldName = null;
+        db.AppUsers.Update(user);
+        await db.SaveChangesAsync();
         StateHasChanged();
     }
 }
